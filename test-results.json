@@ -1,0 +1,342 @@
+{
+  "summary": {
+    "total": 16,
+    "passed": 16,
+    "failed": 0,
+    "passRate": 100,
+    "timestamp": "2026-02-11T08:30:39.463Z",
+    "testEmail": "stellar_demo_299@stellar.com",
+    "database": "Neon DB (Live/Mock)",
+    "baseUrl": "http://localhost:3000"
+  },
+  "results": [
+    {
+      "name": "Health Check",
+      "status": "PASS",
+      "httpStatus": 200,
+      "expectedStatus": 200,
+      "duration": "52ms",
+      "response": {
+        "success": true,
+        "message": "Auth service is running",
+        "timestamp": "2026-02-11T08:30:38.585Z"
+      },
+      "checks": [
+        {
+          "description": "service running",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "Signup Validation (Invalid Email)",
+      "status": "PASS",
+      "httpStatus": 400,
+      "expectedStatus": 400,
+      "duration": "20ms",
+      "response": {
+        "success": false,
+        "message": "Invalid email format"
+      },
+      "checks": [
+        {
+          "description": "rejects bad email",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "Signup (New User)",
+      "status": "PASS",
+      "httpStatus": 201,
+      "expectedStatus": 201,
+      "duration": "263ms",
+      "response": {
+        "success": true,
+        "message": "Signup successful. Please check your email to verify your account.",
+        "data": {
+          "user": {
+            "id": "7374656c6c61",
+            "email": "stellar_demo_299@stellar.com",
+            "name": "Stellar User",
+            "verified": false,
+            "created_at": "2026-02-11T08:30:38.873Z"
+          },
+          "session": null,
+          "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjczNzQ2NTZjNmM2MSIsImVtYWlsIjoic3RlbGxhcl9kZW1vXzI5OUBzdGVsbGFyLmNvbSIsInJvbGUiOiJ1c2VyIiwiY3JlYXRlZF9hdCI6IjIwMjYtMDItMTFUMDg6MzA6MzguODczWiIsImp0aSI6IjAzY2ZjOWI2LWFiNDItNGNhOC04NGI3LWI2YjI2MTM5YzM0ZSIsInVhIjoiNTQ1ZWE1Mzg0NjEwMDNlZiIsImlwIjoiZWZmOGU3Y2E1MDY2MjdmZSIsImlhdCI6MTc3MDc5ODYzOCwiZXhwIjoxNzcwNzk5NTM4LCJhdWQiOiJzdGVsbGFyLXVzZXJzIiwiaXNzIjoic3RlbGxhci1hdXRoLXNlcnZpY2UifQ.dm5vDYy8FdLLdT-pOEETdJfmvSODoMs2aDguYDuO35I",
+          "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjczNzQ2NTZjNmM2MSIsInR5cGUiOiJyZWZyZXNoIiwianRpIjoiMzdmZTk5YmMtYmI3NS00MzE2LWI5OTctNTUzYjlhNmI3NTM0IiwidWEiOiI1NDVlYTUzODQ2MTAwM2VmIiwiaXAiOiJlZmY4ZTdjYTUwNjYyN2ZlIiwiaWF0IjoxNzcwNzk4NjM4LCJleHAiOjE3NzE0MDM0MzgsImF1ZCI6InN0ZWxsYXItdXNlcnMiLCJpc3MiOiJzdGVsbGFyLWF1dGgtc2VydmljZSJ9.ICKvng_ElonXQQrYZpTL4hs0oUFMYV0_rZm6FbMGLpw"
+        }
+      },
+      "checks": [
+        {
+          "description": "user created",
+          "passed": true
+        },
+        {
+          "description": "token returned",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "Signin Validation",
+      "status": "PASS",
+      "httpStatus": 400,
+      "expectedStatus": 400,
+      "duration": "3ms",
+      "response": {
+        "success": false,
+        "message": "Invalid email format"
+      },
+      "checks": [
+        {
+          "description": "rejects bad email",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "Signin (Correct Credentials)",
+      "status": "PASS",
+      "httpStatus": 200,
+      "expectedStatus": 200,
+      "duration": "271ms",
+      "response": {
+        "success": true,
+        "message": "Sign in successful",
+        "data": {
+          "user": {
+            "id": "7374656c6c61",
+            "email": "stellar_demo_299@stellar.com",
+            "name": "Stellar User",
+            "verified": false,
+            "created_at": "2026-02-11T08:30:38.873Z"
+          },
+          "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjczNzQ2NTZjNmM2MSIsImVtYWlsIjoic3RlbGxhcl9kZW1vXzI5OUBzdGVsbGFyLmNvbSIsInJvbGUiOiJ1c2VyIiwiY3JlYXRlZF9hdCI6IjIwMjYtMDItMTFUMDg6MzA6MzguODczWiIsImp0aSI6IjIwM2FhOWU5LTFmYTctNGMyZC05N2MwLWYwMWZhZjE5ZWMyYiIsInVhIjoiNTQ1ZWE1Mzg0NjEwMDNlZiIsImlwIjoiZWZmOGU3Y2E1MDY2MjdmZSIsImlhdCI6MTc3MDc5ODYzOSwiZXhwIjoxNzcwNzk5NTM5LCJhdWQiOiJzdGVsbGFyLXVzZXJzIiwiaXNzIjoic3RlbGxhci1hdXRoLXNlcnZpY2UifQ.IC8h719ngtR7ZBycpv6FQHGDXx45Lgr_TMQYSdabB5E",
+          "jwt_refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjczNzQ2NTZjNmM2MSIsInR5cGUiOiJyZWZyZXNoIiwianRpIjoiOTc1ZTEyZDItOWQ0Yi00N2U0LWI3MWQtMTc1MWIxNjdiY2IxIiwidWEiOiI1NDVlYTUzODQ2MTAwM2VmIiwiaXAiOiJlZmY4ZTdjYTUwNjYyN2ZlIiwiaWF0IjoxNzcwNzk4NjM5LCJleHAiOjE3NzE0MDM0MzksImF1ZCI6InN0ZWxsYXItdXNlcnMiLCJpc3MiOiJzdGVsbGFyLWF1dGgtc2VydmljZSJ9.vT-vHe8dboOXRU243y3YWAePWB1ecbPWVgIuWcHDhQY"
+        }
+      },
+      "checks": [
+        {
+          "description": "authenticated",
+          "passed": true
+        },
+        {
+          "description": "JWT returned",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "Session (No Auth)",
+      "status": "PASS",
+      "httpStatus": 401,
+      "expectedStatus": 401,
+      "duration": "2ms",
+      "response": {
+        "success": false,
+        "message": "Access denied. No token provided."
+      },
+      "checks": [
+        {
+          "description": "requires token",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "Session (Authenticated)",
+      "status": "PASS",
+      "httpStatus": 200,
+      "expectedStatus": 200,
+      "duration": "5ms",
+      "response": {
+        "success": true,
+        "data": {
+          "user": {
+            "id": "7374656c6c61",
+            "email": "stellar_demo_299@stellar.com",
+            "name": "Stellar User",
+            "verified": false,
+            "created_at": "2026-02-11T08:30:38.873Z"
+          }
+        }
+      },
+      "checks": [
+        {
+          "description": "user data returned",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "Token Refresh",
+      "status": "PASS",
+      "httpStatus": 200,
+      "expectedStatus": 200,
+      "duration": "4ms",
+      "response": {
+        "success": true,
+        "message": "JWT token refreshed successfully",
+        "data": {
+          "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjczNzQ2NTZjNmM2MSIsImVtYWlsIjoic3RlbGxhcl9kZW1vXzI5OUBzdGVsbGFyLmNvbSIsInJvbGUiOiJ1c2VyIiwiY3JlYXRlZF9hdCI6IjIwMjYtMDItMTFUMDg6MzA6MzguODczWiIsImp0aSI6IjAzMzg3ZTRlLWM1NDMtNDkzYS05ZWYxLWUxMWRjZTQzMGU2ZSIsInVhIjoiNTQ1ZWE1Mzg0NjEwMDNlZiIsImlwIjoiZWZmOGU3Y2E1MDY2MjdmZSIsImlhdCI6MTc3MDc5ODYzOSwiZXhwIjoxNzcwNzk5NTM5LCJhdWQiOiJzdGVsbGFyLXVzZXJzIiwiaXNzIjoic3RlbGxhci1hdXRoLXNlcnZpY2UifQ.6gSxW2TorwhqrBy-PWoTL-Igd9E5cJASuAOFjaa9IWg",
+          "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjczNzQ2NTZjNmM2MSIsInR5cGUiOiJyZWZyZXNoIiwianRpIjoiNjI1MzFjNzAtMTdmYy00OGQyLWFkYmMtY2E2N2VkNzA1ZjMxIiwidWEiOiI1NDVlYTUzODQ2MTAwM2VmIiwiaXAiOiJlZmY4ZTdjYTUwNjYyN2ZlIiwiaWF0IjoxNzcwNzk4NjM5LCJleHAiOjE3NzE0MDM0MzksImF1ZCI6InN0ZWxsYXItdXNlcnMiLCJpc3MiOiJzdGVsbGFyLWF1dGgtc2VydmljZSJ9.fptpHWyWG2mLy22RmhOT6A3T_gMRqVSBTYPBzoRB9qw",
+          "user": {
+            "id": "7374656c6c61",
+            "email": "stellar_demo_299@stellar.com",
+            "name": "Stellar User",
+            "verified": false
+          }
+        }
+      },
+      "checks": [
+        {
+          "description": "tokens rotated",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "Reset Password Request",
+      "status": "PASS",
+      "httpStatus": 200,
+      "expectedStatus": 200,
+      "duration": "3ms",
+      "response": {
+        "success": true,
+        "message": "If an account exists, a password reset email will be sent"
+      },
+      "checks": [
+        {
+          "description": "email sent",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "Verify Email",
+      "status": "PASS",
+      "httpStatus": 200,
+      "expectedStatus": 200,
+      "duration": "5ms",
+      "response": {
+        "success": true,
+        "message": "Email verified successfully. You can now sign in."
+      },
+      "checks": [
+        {
+          "description": "verified",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "Resend Verification",
+      "status": "PASS",
+      "httpStatus": 200,
+      "expectedStatus": 200,
+      "duration": "3ms",
+      "response": {
+        "success": true,
+        "message": "Verification email sent successfully. Please check your email."
+      },
+      "checks": [
+        {
+          "description": "sent",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "Reset Password Confirm",
+      "status": "PASS",
+      "httpStatus": 200,
+      "expectedStatus": 200,
+      "duration": "273ms",
+      "response": {
+        "success": true,
+        "message": "Password reset successfully. You can now sign in with your new password."
+      },
+      "checks": [
+        {
+          "description": "password updated",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "Google OAuth Initiate",
+      "status": "PASS",
+      "httpStatus": 200,
+      "expectedStatus": 200,
+      "duration": "3ms",
+      "response": {
+        "success": true,
+        "message": "Google OAuth URL generated",
+        "data": {
+          "url": "https://accounts.google.com/o/oauth2/v2/auth?client_id=606807576305-j7cm4c26v638q5s3mh0ljro3nso30101.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback%2Fgoogle&response_type=code&scope=openid%20email%20profile&state=c459d1764f9ade94d2f43e7bbf44c512fb1aff307f7c46930c254114344c0df9&access_type=offline&prompt=consent",
+          "provider": "google",
+          "state": "c459d1764f9ade94d2f43e7bbf44c512fb1aff307f7c46930c254114344c0df9"
+        }
+      },
+      "checks": [
+        {
+          "description": "url generated",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "Security Headers",
+      "status": "PASS",
+      "httpStatus": 200,
+      "expectedStatus": 200,
+      "duration": "3ms",
+      "response": {
+        "success": true,
+        "message": "Google OAuth URL generated",
+        "data": {
+          "url": "https://accounts.google.com/o/oauth2/v2/auth?client_id=606807576305-j7cm4c26v638q5s3mh0ljro3nso30101.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback%2Fgoogle&response_type=code&scope=openid%20email%20profile&state=c459d1764f9ade94d2f43e7bbf44c512fb1aff307f7c46930c254114344c0df9&access_type=offline&prompt=consent",
+          "provider": "google",
+          "state": "c459d1764f9ade94d2f43e7bbf44c512fb1aff307f7c46930c254114344c0df9"
+        }
+      },
+      "checks": [
+        {
+          "description": "X-Request-ID",
+          "passed": true
+        },
+        {
+          "description": "X-Frame-Options",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "CORS Policy",
+      "status": "PASS",
+      "httpStatus": 204,
+      "expectedStatus": 204,
+      "duration": "1ms",
+      "response": null,
+      "checks": []
+    },
+    {
+      "name": "Signout",
+      "status": "PASS",
+      "httpStatus": 200,
+      "expectedStatus": 200,
+      "duration": "3ms",
+      "response": {
+        "success": true,
+        "message": "Sign out successful"
+      },
+      "checks": [
+        {
+          "description": "success",
+          "passed": true
+        }
+      ]
+    }
+  ]
+}
