@@ -11,6 +11,7 @@ const parseAllowedOrigins = () => {
 };
 
 const allowedOrigins = parseAllowedOrigins();
+console.log('CORS: Initialized with allowed origins:', allowedOrigins);
 
 /**
  * CORS configuration options
@@ -22,10 +23,13 @@ export const corsOptions = {
             return callback(null, true);
         }
 
+        console.log(`CORS: Checking origin: "${origin}" against patterns:`, allowedOrigins);
+
         // Check if origin matches any allowed pattern (including wildcards)
         const isOriginAllowed = allowedOrigins.some(pattern => {
             // Exact match
             if (pattern === origin) {
+                console.log(`CORS: Match found (exact): ${pattern}`);
                 return true;
             }
 
@@ -33,7 +37,11 @@ export const corsOptions = {
             if (pattern.startsWith('*.')) {
                 const domain = pattern.slice(2); // Remove *.
                 const originDomain = origin.replace(/^https?:\/\//, ''); // Remove protocol
-                return originDomain.endsWith(domain);
+                const matches = originDomain.endsWith(domain);
+                if (matches) {
+                    console.log(`CORS: Match found (wildcard): ${pattern}`);
+                }
+                return matches;
             }
 
             return false;
@@ -42,8 +50,10 @@ export const corsOptions = {
         if (isOriginAllowed) {
             callback(null, true);
         } else {
-            console.warn(`CORS blocked request from origin: ${origin}`);
-            callback(new Error('Not allowed by CORS'));
+            console.warn(`CORS: BLOCKED origin: "${origin}". Not in allowed list.`);
+            // Use null, false instead of Error to allow standard browser CORS behavior
+            // and avoid triggering the global error handler unnecessarily.
+            callback(null, false);
         }
     },
     credentials: true,
