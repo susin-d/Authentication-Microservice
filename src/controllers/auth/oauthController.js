@@ -11,7 +11,7 @@ export const signInWithGoogle = asyncHandler(async (req, res) => {
     });
 
     const googleClientId = process.env.GOOGLE_CLIENT_ID;
-    const redirectUri = `${req.protocol}://${req.get('host')}/auth/callback/google`;
+    const redirectUri = `${req.protocol}://${req.get('host')}/api/auth/callback/google`;
 
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
         `client_id=${googleClientId}&` +

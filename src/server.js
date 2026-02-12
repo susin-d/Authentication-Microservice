@@ -20,6 +20,7 @@ app.use(requestLogger);
 
 // Apply CORS middleware
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Handle all preflight requests
 
 // Configure Security Headers (Helmet, etc.)
 configureSecurity(app);
