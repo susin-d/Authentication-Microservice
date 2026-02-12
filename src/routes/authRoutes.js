@@ -1,6 +1,8 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.js';
-import {
+import * as authController from '../controllers/auth/index.js';
+
+const {
   signUp,
   signIn,
   signOut,
@@ -12,8 +14,9 @@ import {
   resetPassword,
   verifyEmail,
   resendVerification,
-  resetPasswordWithToken
-} from '../controllers/authController.js';
+  resetPasswordWithToken,
+  deleteAccount
+} = authController;
 
 const router = express.Router();
 
@@ -100,5 +103,12 @@ router.post('/resend-verification', resendVerification);
  * @access  Public
  */
 router.post('/reset-password/confirm', resetPasswordWithToken);
+
+/**
+ * @route   DELETE /api/auth/delete-account
+ * @desc    Delete the current user's account
+ * @access  Private (requires JWT token)
+ */
+router.delete('/delete-account', authenticate, deleteAccount);
 
 export default router;

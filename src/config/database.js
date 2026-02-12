@@ -1,21 +1,19 @@
-import pg from 'pg';
+import { Pool, neonConfig } from '@neondatabase/serverless';
 import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
+import ws from 'ws';
 
 dotenv.config();
 
-const { Pool } = pg;
+// Configure neon to use WebSockets for resilient connectivity over port 443
+neonConfig.webSocketConstructor = ws;
 
 // IN-MEMORY MOCK STORE FOR REPORTS
 const mockUsers = new Map();
 
-// Neon DB connection pool
+// Neon DB connection pool (@neondatabase/serverless)
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
-  max: 20, // Maximum number of clients in the pool
-  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
-  connectionTimeoutMillis: 10000 // 10 seconds - Neon serverless cold starts need more time
+  connectionString: process.env.DATABASE_URL
 });
 
 // Log pool errors
@@ -100,6 +98,20 @@ export const query = async (text, params) => {
       return { rowCount: 1, rows: [] };
     }
 
+    // Simulate user deletion
+    if (queryLower.includes('delete from users')) {
+      const id = params[0];
+      console.log('MOCK DB: Simulating user deletion for ID:', id);
+      // Remove from map if possible (find by ID)
+      for (const [email, user] of mockUsers.entries()) {
+        if (user.id === id) {
+          mockUsers.delete(email);
+          break;
+        }
+      }
+      return { rowCount: 1, rows: [] };
+    }
+
     // Default mock response
     return { rowCount: 0, rows: [] };
   }
@@ -107,11 +119,11 @@ export const query = async (text, params) => {
   try {
     const res = await pool.query(text, params);
     const duration = Date.now() - start;
-    console.log('Executed query', { text: text.substring(0, 100), duration, rows: res.rowCount });
+    console.log('Executed query', { text: text.substring(0, 50), duration, rows: res.rowCount });
     return res;
   } catch (err) {
     console.error('Database query error:', err.message);
-    throw err; // Re-throw to be handled by controller/global handler
+    throw err;
   }
 };
 

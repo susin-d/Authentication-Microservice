@@ -1,0 +1,14 @@
+--- Database Debug Tool ---
+DATABASE_URL starts with: postgresql://neondb_...
+Timeout setting: 30000ms
+
+Step 1: Attempting to connect and run simple query...
+SUCCESS! Current DB time: Thu Feb 12 2026 11:22:24 GMT+0530 (India Standard Time)
+
+Step 2: Attempting to initialize tables...
+SUCCESS! Database initialization sequence completed.
+
+Step 3: Attempting to list users...
+SUCCESS! Current user count: 3
+
+Debug session ended.

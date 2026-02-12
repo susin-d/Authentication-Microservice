@@ -22,6 +22,7 @@ A Node.js authentication service built with Express and Supabase, providing emai
 - ✅ Input sanitization and validation
 - ✅ Token binding to user context
 - ✅ Secure error handling
+- ✅ Delete account functionality
 
 ## Prerequisites
 
@@ -186,6 +187,13 @@ Content-Type: application/json
   "access_token": "your_access_token",
   "refresh_token": "your_refresh_token"
 }
+
+#### Delete Account
+```
+DELETE /api/auth/delete-account
+Authorization: Bearer <jwt_token>
+```
+Permanently deletes the current user's account from the database.
 ```
 
 #### Get Session

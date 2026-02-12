@@ -75,11 +75,33 @@ Invalidate the current user session (Handled client-side by purging tokens).
   { "success": true, "message": "Sign out successful" }
   ```
 
+### 4. Delete Account
+Permanently delete the current user's account and all associated data.
+
+- **URL**: `/api/auth/delete-account`
+- **Method**: `DELETE`
+- **Access**: Private (Requires Bearer Token)
+- **Headers**: `Authorization: Bearer <token>`
+- **Success Response (200 OK)**:
+  ```json
+  {
+    "success": true,
+    "message": "Account deleted successfully"
+  }
+  ```
+- **Error Response (404 Not Found)**:
+  ```json
+  {
+    "success": false,
+    "message": "User not found or already deleted"
+  }
+  ```
+
 ---
 
 ## Session & Token Management
 
-### 4. Get Current Session
+### 5. Get Current Session
 Retrieve user details using an access token.
 
 - **URL**: `/api/auth/session`
@@ -100,7 +122,7 @@ Retrieve user details using an access token.
   }
   ```
 
-### 5. Refresh JWT Token
+### 6. Refresh JWT Token
 Obtain a new access token using a refresh token.
 
 - **URL**: `/api/auth/refresh-jwt`
@@ -126,7 +148,7 @@ Obtain a new access token using a refresh token.
 
 ## Account Recovery & Verification
 
-### 6. Verify Email
+### 7. Verify Email
 Verify a user account using the token sent to their email.
 
 - **URL**: `/api/auth/verify-email`
@@ -140,7 +162,7 @@ Verify a user account using the token sent to their email.
   }
   ```
 
-### 7. Reset Password Request
+### 8. Reset Password Request
 Send a password reset link to the user's email.
 
 - **URL**: `/api/auth/reset-password`
@@ -151,7 +173,7 @@ Send a password reset link to the user's email.
   { "email": "user@example.com" }
   ```
 
-### 8. Confirm Password Reset
+### 9. Confirm Password Reset
 Set a new password using a reset token.
 
 - **URL**: `/api/auth/reset-password/confirm`
@@ -170,7 +192,7 @@ Set a new password using a reset token.
 
 ## OAuth Endpoints
 
-### 9. Google Sign-In (Initiate)
+### 10. Google Sign-In (Initiate)
 Generate the Google OAuth URL.
 
 - **URL**: `/api/auth/google`
