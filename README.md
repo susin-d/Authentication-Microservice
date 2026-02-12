@@ -123,7 +123,7 @@ For production:
 npm start
 ```
 
-The server will start on `http://localhost:3000`
+The server will start on `http://localhost:3000` (Local) or `https://auth.susindran.in` (Production)
 
 ## API Endpoints
 

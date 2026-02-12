@@ -1,14 +1,15 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+
+// Load environment variables immediately
+dotenv.config();
+
 import authRoutes from './routes/authRoutes.js';
 import { initializeDatabase } from './config/database.js';
 import { corsOptions } from './config/cors.js';
 import { configureSecurity } from './config/security.js';
 import { requestIdMiddleware, requestLogger, sanitizeForLog } from './utils/logger.js';
-
-// Load environment variables
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
