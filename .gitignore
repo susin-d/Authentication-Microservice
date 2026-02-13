@@ -1,7 +1,7 @@
 # Dependencies
 node_modules/
 react-test/node_modules/
-
+/react-test
 # Environment variables
 .env
 .env.local

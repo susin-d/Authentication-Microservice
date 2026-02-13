@@ -1,207 +1,513 @@
-# Auth Service API
+# M-Auth API Documentation v1.0.2
 
-Base URL
-- Local: http://localhost:${PORT}
-- Default PORT: 3000 (or use PORT in .env)
+Complete API reference for M-Auth microservice endpoints, request/response formats, error handling, and security considerations.
 
-## Test Frontend
-A simple HTML test interface is available at:
-- http://localhost:${PORT}/
+## Table of Contents
+- [Base URL](#base-url)
+- [Authentication](#authentication)
+- [Endpoints](#endpoints)
+- [Error Handling](#error-handling)
+- [Security](#security)
+- [Rate Limiting](#rate-limiting)
+- [Examples](#examples)
 
-The test frontend provides forms for signup, signin, Google OAuth, and account deletion.
+## Base URL
 
-## Overview
-This service provides email/password auth, Google OAuth, and account deletion. It uses Supabase Auth under the hood and issues a service JWT for downstream services on sign-in.
+```
+http://localhost:3000/api/v1/auth
+```
 
-## Security Features
-- Input validation on all endpoints
-- Password strength requirements (8+ chars, uppercase, lowercase, number)
-- Failed login protection (5 attempts max, 15-min lockout)
-- Audit logging for security events
-- HTTPS-only URLs enforced
-- Sanitized error messages
-- Cookie security (httpOnly, secure, sameSite)
-
-See [SECURITY.md](SECURITY.md) for full security documentation.
+Production environment uses HTTPS:
+```
+https://api.yourdomain.com/api/v1/auth
+```
 
 ## Authentication
-Protected routes require a Bearer token:
 
+### JWT Token
+Protected endpoints require a JWT token in the `Authorization` header:
+
+```
 Authorization: Bearer <access_token>
+```
 
-For Google OAuth, the backend sets httpOnly cookies on callback:
-- auth-token (service JWT, 1 hour)
-- refresh-token (Google refresh token, 30 days)
-
-## Google OAuth Setup
-This service uses direct Google OAuth integration (not through Supabase):
-1. Create OAuth credentials in Google Cloud Console
-2. Add authorized redirect URIs:
-   - http://localhost:3000/api/v1/auth/google/callback (development)
-   - https://your-domain.com/api/v1/auth/google/callback (production)
-3. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env
-
-## Environment Variables
-Required
-- SUPABASE_URL
-- SUPABASE_SERVICE_ROLE_KEY
-- JWT_SECRET
-- GOOGLE_CLIENT_ID (from Google Cloud Console)
-- GOOGLE_CLIENT_SECRET (from Google Cloud Console)
-- BREVO_API_KEY
-- BREVO_SENDER_NAME
-- BREVO_SENDER_EMAIL
-
-Optional
-- PORT
-- FRONTEND_URL (base URL for email/OAuth redirects)
-- NODE_ENV (production enables secure cookies)
-
-## CORS Configuration
-The API accepts requests from:
-- localhost (any port) for development
-- All *.susindran.in subdomains (e.g., app.susindran.in, auth.susindran.in)
-- Credentials (cookies) are supported for authenticated requests
+### Cookies
+OAuth and session-based endpoints set authentication cookies:
+- `auth-token`: Access token (httpOnly, 1 hour expiry)
+- `refresh-token`: Refresh token (httpOnly, 30 day expiry)
 
 ## Endpoints
 
-### POST /api/v1/auth/signup
-Create a user and send a verification link in the welcome email.
+### 1. User Signup
 
-Request body
-```json
+Create a new user account with email and password.
+
+```http
+POST /signup
+Content-Type: application/json
+
 {
   "email": "user@example.com",
   "password": "Password123!",
-  "frontendUrl": "https://app.example.com"
+  "frontendUrl": "https://yourdomain.com"
 }
 ```
 
-Validation Rules
-- email: Valid email format, max 255 characters
-- password: Minimum 8 characters, must contain uppercase, lowercase, and number
-- frontendUrl: Must be valid HTTPS URL (optional)
+**Parameters:**
+- `email` (required): Valid email address
+- `password` (required): Minimum 8 characters, must contain uppercase, lowercase, and numbers
+- `frontendUrl` (optional): Frontend URL for email verification redirects
 
-Rules
-- frontendUrl must be a valid https:// URL.
-- If frontendUrl is omitted, FRONTEND_URL is used.
-- Verification redirect is ${frontendUrl}/verify.
-
-Response 201
+**Response:** `201 Created`
 ```json
 {
   "message": "User created",
-  "user_id": "<uuid>"
+  "user_id": "550e8400-e29b-41d4-a716-446655440000"
 }
 ```
 
-Errors
-- 400 validation failed or email already in use
-
-curl
-```bash
-curl -X POST http://localhost:5000/api/v1/auth/signup \
-  -H "Content-Type: application/json" \
-  -d '{"email":"user@example.com","password":"Password123!","frontendUrl":"https://app.example.com"}'
-Security
-- Maximum 5 failed attempts allowed
-- Account locked for 15 minutes after max attempts
-- Failed attempts reset after 1 hour of inactivity
-
-Request body
+**Error Responses:**
 ```json
+// Email already exists
+{
+  "error": "This email is already registered. Please sign in or use a different email."
+}
+
+// Invalid email format
+{
+  "error": "Invalid email format. Please provide a valid email address."
+}
+
+// Weak password
+{
+  "error": "Password must be at least 8 characters with uppercase, lowercase, and numbers."
+}
+
+// Rate limited
+{
+  "error": "Too many requests. Please try again in a few minutes.",
+  "statusCode": 429
+}
+```
+
+---
+
+### 2. User Signin
+
+Authenticate with email and password.
+
+```http
+POST /signin
+Content-Type: application/json
+
 {
   "email": "user@example.com",
   "password": "Password123!"
 }
 ```
 
-Response 200
+**Parameters:**
+- `email` (required): Registered email address
+- `password` (required): Account password
+
+**Response:** `200 OK`
 ```json
 {
-  "user": { "id": "<uuid>", "email": "user@example.com" },
-  "access_token": "<service_jwt>",
-  "refresh_token": "<supabase_refresh_token>"
+  "user": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "email": "user@example.com"
+  },
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
 ```
 
-Errors
-- 401 invalid email or password
-- 429 account temporarily locked (includes remainingMinutes)base_refresh_token>"
+**Cookies Set:**
+- `auth-token`: JWT access token
+- `refresh-token`: JWT refresh token
+
+**Error Responses:**
+```json
+// Account locked after failed attempts
+{
+  "error": "Account temporarily locked",
+  "remainingMinutes": 15
+}
+
+// Invalid credentials
+{
+  "error": "Invalid email or password"
 }
 ```
 
-Errors
-- 401 invalid credentials
+---
 
-curl
+### 3. Google OAuth
+
+Initiate Google OAuth flow with optional redirect URL.
+
+```http
+GET /google?frontend_url=https://yourdomain.com
+```
+
+**Parameters:**
+- `frontend_url` (optional): Frontend URL to redirect after OAuth. Falls back to `FRONTEND_URL` environment variable
+
+**Flow:**
+1. Frontend redirects to this endpoint with `frontend_url` parameter
+2. Backend encodes frontend URL in OAuth state parameter (base64)
+3. Backend redirects to Google OAuth consent screen
+4. User authenticates with Google
+5. Google redirects to `/google/callback` with code and state
+6. Backend extracts frontendUrl from state, exchanges code for tokens
+7. Backend sets authentication cookies
+8. Backend redirects to frontend URL with user authenticated
+
+**Response:** `302 Redirect` to Google OAuth
+
+**Example Frontend Call:**
+```javascript
+const frontendUrl = window.location.origin;
+window.location.href = `http://localhost:3000/api/v1/auth/google?frontend_url=${encodeURIComponent(frontendUrl)}`;
+```
+
+**Cookies Set After OAuth:**
+- `auth-token`: JWT access token
+- `refresh-token`: JWT refresh token
+
+---
+
+### 4. Google OAuth Callback
+
+Handles Google OAuth callback (called by Google servers).
+
+```http
+GET /google/callback?code=<auth_code>&state=<encoded_frontend_url>
+```
+
+**Note:** This endpoint is called by Google servers automatically after user authentication.
+
+**Parameters:**
+- `code` (required): Authorization code from Google
+- `state` (optional): Base64-encoded frontend URL from initial request
+
+**Response:** `302 Redirect` to frontend with cookies set
+
+**Error Responses:**
+```json
+// Missing authorization code
+{
+  "error": "Missing OAuth code"
+}
+
+// Authorization code expired/invalid
+{
+  "error": "Invalid or expired authorization code. Please try signing in again."
+}
+
+// User denied access
+{
+  "error": "You denied access to your Google account. Please try again and allow access."
+}
+
+// Account already exists
+{
+  "error": "An account with this email already exists. Please sign in instead.",
+  "statusCode": 409
+}
+```
+
+---
+
+### 5. Verify Email (Public)
+
+Verify email address with token from email link.
+
+```http
+GET /verify-email?token=<verification_token>
+```
+
+**Parameters:**
+- `token` (required): Verification token from email link
+- `type` (optional): Verification type (default: `email`)
+
+**Response:** `200 OK` - HTML page
+- Success: Animated confirmation page with styled success message
+- Error: Styled error page with error details
+
+**What Happens:**
+1. Token is verified with Supabase
+2. Profile `email_verified` field is updated
+3. Welcome email is sent automatically
+4. HTML success/error page is displayed
+
+---
+
+### 6. Get Profile (Protected)
+
+Retrieve authenticated user's profile.
+
+```http
+GET /profile
+Authorization: Bearer <access_token>
+```
+
+**Response:** `200 OK`
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "email": "user@example.com",
+  "full_name": "John Doe",
+  "avatar_url": "https://example.com/avatar.jpg",
+  "email_verified": true,
+  "email_verified_at": "2026-02-13T10:30:00Z",
+  "created_at": "2026-02-13T09:00:00Z",
+  "last_signin_at": "2026-02-13T10:30:00Z",
+  "account_status": "active"
+}
+```
+
+**Error Responses:**
+```json
+// Unauthorized - invalid/missing token
+{
+  "error": "No authorization token provided"
+}
+
+// Token expired
+{
+  "error": "Token expired"
+}
+
+// User not found
+{
+  "error": "User not found"
+}
+```
+
+---
+
+### 7. Update Profile (Protected)
+
+Update user profile information.
+
+```http
+PUT /profile
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "full_name": "John Doe",
+  "avatar_url": "https://example.com/new-avatar.jpg"
+}
+```
+
+**Parameters:**
+- `full_name` (optional): User's full name
+- `avatar_url` (optional): URL to user's avatar image
+
+**Response:** `200 OK`
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "email": "user@example.com",
+  "full_name": "John Doe",
+  "avatar_url": "https://example.com/new-avatar.jpg",
+  "updated_at": "2026-02-13T10:35:00Z"
+}
+```
+
+---
+
+### 8. Delete Account (Protected)
+
+Permanently delete user account and all associated data.
+
+```http
+DELETE /delete-account
+Authorization: Bearer <access_token>
+```
+
+**Response:** `200 OK`
+```json
+{
+  "message": "Account deleted successfully",
+  "success": true
+}
+```
+
+**Error Responses:**
+```json
+// Unauthorized
+{
+  "error": "No authorization token provided"
+}
+
+// Account not found
+{
+  "error": "Account not found or already deleted.",
+  "statusCode": 404
+}
+```
+
+---
+
+### 9. Health Check
+
+Check API service health status.
+
+```http
+GET /health
+```
+
+**Response:** `200 OK`
+```json
+{
+  "status": "UP",
+  "service": "auth-service"
+}
+```
+
+---
+
+## Error Handling
+
+### HTTP Status Codes
+
+| Code | Meaning | Common Causes |
+|------|---------|---------------|
+| 200 | OK | Successful request |
+| 201 | Created | Resource created successfully |
+| 302 | Redirect | OAuth/email verification redirects |
+| 400 | Bad Request | Invalid parameters, missing fields |
+| 401 | Unauthorized | Invalid/missing token, invalid credentials |
+| 403 | Forbidden | Permission denied |
+| 404 | Not Found | Resource not found |
+| 409 | Conflict | Email already exists, duplicate data |
+| 429 | Too Many Requests | Rate limited, account locked |
+| 500 | Internal Error | Server error |
+
+### Error Response Format
+
+```json
+{
+  "error": "Human-readable error message",
+  "statusCode": 400,
+  "details": "Technical details (development only)"
+}
+```
+
+---
+
+## Security
+
+### Password Requirements
+
+- Minimum 8 characters
+- At least one uppercase letter (A-Z)
+- At least one lowercase letter (a-z)
+- At least one number (0-9)
+
+### Failed Login Protection
+
+- 5 consecutive failed attempts → 15-minute account lockout
+- Automatic reset after 1 hour
+- Persistent tracking across server restarts
+- IP address logging for audit trail
+
+### JWT Token Security
+
+- **Algorithm:** HS256 (HMAC SHA-256)
+- **Access Token Expiry:** 1 hour
+- **Refresh Token Expiry:** 30 days
+- **Secret:** 256-bit random string
+
+### Cookie Security
+
+| Flag | Value | Effect |
+|------|-------|--------|
+| httpOnly | true | Prevents XSS attacks |
+| secure | true (prod) | HTTPS only in production |
+| sameSite | strict (prod) | CSRF protection |
+
+### CORS Configuration
+
+- Explicit domain validation (no regex)
+- No wildcard origins in production
+- Localhost allowed only in development
+
+---
+
+## Rate Limiting
+
+Current limits (per IP address):
+
+- **Signup/Signin:** 5 requests per minute
+- **Email Verification:** 10 requests per hour
+- **General API:** 100 requests per minute
+- **OAuth:** 10 initiations per hour
+
+**Response on Rate Limit:**
+```json
+{
+  "error": "Too many requests. Please try again in a few minutes.",
+  "statusCode": 429
+}
+```
+
+---
+
+## Examples
+
+### Example 1: Sign Up
+
 ```bash
-curl -X POST http://localhost:5000/api/v1/auth/signin \
+curl -X POST http://localhost:3000/api/v1/auth/signup \
   -H "Content-Type: application/json" \
-  -d '{"email":"user@example.com","password":"Password123!"}'
+  -d '{
+    "email": "user@example.com",
+    "password": "SecurePass123!",
+    "frontendUrl": "https://yourdomain.com"
+  }'
 ```
 
-### DELETE /api/v1/auth/delete-account
-Delete the current user. Requires Bearer token.
+### Example 2: Sign In
 
-Headers
-- Authorization: Bearer <access_token>
-
-Response 200
-```json
-{
-  "message": "Account deleted"
-}
-```
-
-Errors
-- 401 missing or invalid token
-- 500 server error
-
-curl
 ```bash
-curl -X DELETE http://localhost:5000/api/v1/auth/delete-account \
+curl -X POST http://localhost:3000/api/v1/auth/signin \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "password": "SecurePass123!"
+  }'
+```
+
+### Example 3: Get Profile
+
+```bash
+curl -X GET http://localhost:3000/api/v1/auth/profile \
   -H "Authorization: Bearer <access_token>"
 ```
 
-### GET /api/v1/auth/google
-Start Google OAuth. Redirects to Google consent screen.
+### Example 4: Google OAuth
 
-Query params
-- None required (uses FRONTEND_URL from environment)
-
-Response
-- 302 redirect to Google
-
-curl (follow redirects)
-```bash
-curl -L "http://localhost:5000/api/v1/auth/google"
+```javascript
+// Initiate OAuth flow
+const frontendUrl = window.location.origin;
+window.location.href = `http://localhost:3000/api/v1/auth/google?frontend_url=${encodeURIComponent(frontendUrl)}`;
 ```
 
-### GET /api/v1/auth/google/callback
-Handle Google OAuth callback. Exchanges code for tokens, creates/updates user, sets cookies, and redirects.
+### Example 5: Delete Account
 
-Query params
-- code (required) - OAuth authorization code from Google
+```bash
+curl -X DELETE http://localhost:3000/api/v1/auth/delete-account \
+  -H "Authorization: Bearer <access_token>"
+```
 
-Behavior
-- Exchanges code directly with Google OAuth servers
-- Gets user profile from Google (email, name, picture)
-- Creates Supabase user if new, or finds existing user by email
-- Generates service JWT for your microservices
-- Sets cookies: auth-token (service JWT), refresh-token (Google refresh token)
-- Redirects to FRONTEND_URL/auth/callback (from environment variable)
+---
 
-Errors
-- 400 missing code or Google OAuth error
+## References
 
-## Implementation Notes
-- Google OAuth is handled directly using googleapis, not Supabase auth provider
-- User accounts are still stored in Supabase (profiles table)
-- Service JWT (auth-token) is used for communication with other microservices
-- Google refresh token is stored in cookie for future token refreshes
-- After OAuth callback, users are redirected to FRONTEND_URL from environment
-
-## Notes
-- FRONTEND_URL must be https:// only.
-- Cookies are httpOnly=true, secure=true in production, SameSite=strict in production.
+- [Security Guide](SECURITY.md) - Complete security documentation
+- [Database Schema](DATABASE.md) - Database structure
+- [Main README](../README.md) - Project overview

@@ -226,8 +226,12 @@ class AuthService {
     return { success: true };
   }
 
-  async getGoogleAuthUrl(origin) {
+  async getGoogleAuthUrl(origin, frontendUrl) {
     const callbackUrl = new URL('/api/v1/auth/google/callback', origin);
+    
+    // Encode frontend_url in state parameter for recovery after OAuth callback
+    const state = frontendUrl ? Buffer.from(frontendUrl).toString('base64') : '';
+    
     const googleAuthUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
     googleAuthUrl.searchParams.set('client_id', process.env.GOOGLE_CLIENT_ID);
     googleAuthUrl.searchParams.set('redirect_uri', callbackUrl.toString());
@@ -235,6 +239,9 @@ class AuthService {
     googleAuthUrl.searchParams.set('scope', 'email profile openid');
     googleAuthUrl.searchParams.set('access_type', 'offline');
     googleAuthUrl.searchParams.set('prompt', 'consent');
+    if (state) {
+      googleAuthUrl.searchParams.set('state', state);
+    }
     return googleAuthUrl.toString();
   }
 
@@ -402,11 +409,20 @@ class AuthService {
     };
   }
 
-  buildFrontendRedirect() {
-    const frontendUrl = validateHttpsUrl(process.env.FRONTEND_URL);
+  buildFrontendRedirect(frontendUrlParam) {
+    // Use provided frontend_url or fallback to environment variable
+    const frontendUrl = frontendUrlParam || process.env.FRONTEND_URL;
+    
     if (!frontendUrl) {
       throw new Error('FRONTEND_URL environment variable is required');
     }
+    
+    // Validate the URL
+    const validated = validateHttpsUrl(frontendUrl);
+    if (!validated) {
+      throw new Error('Invalid frontend URL format or protocol');
+    }
+    
     return frontendUrl;
   }
 

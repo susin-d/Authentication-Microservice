@@ -250,7 +250,8 @@ exports.updateProfile = async (req, res) => {
 exports.googleAuth = async (req, res) => {
   try {
     const origin = `${req.protocol}://${req.get('host')}`;
-    const authUrl = await AuthService.getGoogleAuthUrl(origin);
+    const frontendUrl = req.query.frontend_url;
+    const authUrl = await AuthService.getGoogleAuthUrl(origin, frontendUrl);
     res.redirect(authUrl);
   } catch (err) {
     console.error('Google Auth initiation error:', err);
@@ -283,14 +284,24 @@ exports.googleAuth = async (req, res) => {
 
 exports.googleCallback = async (req, res) => {
   try {
-    const { code } = req.query;
+    const { code, state } = req.query;
     if (!code) {
       return res.status(400).json({ error: 'Missing OAuth code' });
     }
 
+    // Decode frontend_url from state parameter
+    let frontendUrl = null;
+    if (state) {
+      try {
+        frontendUrl = Buffer.from(state, 'base64').toString('utf-8');
+      } catch (err) {
+        console.error('Failed to decode state parameter:', err);
+      }
+    }
+
     const origin = `${req.protocol}://${req.get('host')}`;
     const session = await AuthService.exchangeGoogleCode(code, origin);
-    const redirectTo = AuthService.buildFrontendRedirect();
+    const redirectTo = AuthService.buildFrontendRedirect(frontendUrl);
 
     // Set cookies using security config
     res.cookie('auth-token', session.access_token, {

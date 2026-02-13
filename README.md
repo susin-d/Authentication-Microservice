@@ -121,10 +121,24 @@ Content-Type: application/json
 
 #### 3. Google OAuth
 ```http
-GET /google
+GET /google?frontend_url=https://yourdomain.com
 ```
 
-Redirects to Google OAuth consent screen. After authentication, Google redirects to the backend callback URL, which then sets cookies and redirects to FRONTEND_URL from environment variables.
+**Flow:**
+1. Frontend makes GET request to `/google` endpoint with `frontend_url` query parameter
+2. Backend redirects browser to Google OAuth consent screen
+3. User authenticates with Google
+4. Google redirects back to backend callback URL: `http://localhost:3000/api/v1/auth/google/callback`
+5. Backend validates token, sets authentication cookies
+6. Backend redirects to the `frontend_url` provided in the request
+
+**Example Frontend Implementation:**
+```javascript
+// Redirect user to Google OAuth endpoint with frontend URL
+window.location.href = 'http://localhost:3000/api/v1/auth/google?frontend_url=https://yourdomain.com';
+```
+
+After redirect, cookies are set and user is authenticated on the frontend.
 
 #### 4. Verify Email (Public)
 ```http
