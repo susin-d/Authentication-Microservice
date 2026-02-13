@@ -5,7 +5,7 @@ import axios from 'axios'
 axios.defaults.withCredentials = true
 
 function App() {
-  const [apiUrl] = useState('http://localhost:3000/api/v1/auth')
+  const [apiUrl] = useState('https://auth.susindran.in/api/v1/auth')
   const [response, setResponse] = useState(null)
   const [loading, setLoading] = useState(false)
   const [accessToken, setAccessToken] = useState('')
@@ -45,7 +45,7 @@ function App() {
 
   const checkHealth = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/health')
+      const res = await axios.get('https://auth.susindran.in/health')
       setHealthStatus(res.data.status === 'UP' ? 'online' : 'offline')
     } catch (error) {
       setHealthStatus('offline')

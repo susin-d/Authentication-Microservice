@@ -249,7 +249,10 @@ exports.updateProfile = async (req, res) => {
 
 exports.googleAuth = async (req, res) => {
   try {
-    const origin = `${req.protocol}://${req.get('host')}`;
+    // Force HTTPS for production domain
+    const host = req.get('host');
+    const protocol = (host.includes('susindran.in') || process.env.NODE_ENV === 'production') ? 'https' : req.protocol;
+    const origin = `${protocol}://${host}`;
     const frontendUrl = req.query.frontend_url;
     const authUrl = await AuthService.getGoogleAuthUrl(origin, frontendUrl);
     res.redirect(authUrl);
@@ -299,7 +302,10 @@ exports.googleCallback = async (req, res) => {
       }
     }
 
-    const origin = `${req.protocol}://${req.get('host')}`;
+    // Force HTTPS for production domain
+    const host = req.get('host');
+    const protocol = (host.includes('susindran.in') || process.env.NODE_ENV === 'production') ? 'https' : req.protocol;
+    const origin = `${protocol}://${host}`;
     const session = await AuthService.exchangeGoogleCode(code, origin);
     const redirectTo = AuthService.buildFrontendRedirect(frontendUrl);
 
