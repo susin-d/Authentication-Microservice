@@ -1,0 +1,39 @@
+{
+  "name": "m-auth",
+  "version": "1.0.1",
+  "description": "Authentication microservice with JWT, Google OAuth, email verification, and comprehensive security features",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node test.js",
+    "test:email": "node scripts/test-email.js"
+  },
+  "keywords": [
+    "auth",
+    "jwt",
+    "oauth",
+    "supabase",
+    "microservice",
+    "security"
+  ],
+  "author": "Susindran",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.95.3",
+    "axios": "^1.13.5",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "csurf": "^1.11.0",
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "express-validator": "^7.3.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.10.1",
+    "sib-api-v3-sdk": "^8.5.0",
+    "validator": "^13.15.26"
+  }
+}
