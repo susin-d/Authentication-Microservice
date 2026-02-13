@@ -334,7 +334,13 @@ exports.googleCallback = async (req, res) => {
       });
     }
 
-    return res.redirect(redirectTo);
+    // Add token to redirect URL for SPA to capture
+    const redirectUrl = new URL(redirectTo);
+    redirectUrl.searchParams.set('access_token', session.access_token);
+    redirectUrl.searchParams.set('user_id', session.user.id);
+    redirectUrl.searchParams.set('email', session.user.email);
+
+    return res.redirect(redirectUrl.toString());
   } catch (err) {
     console.error('Google OAuth callback error:', err);
     

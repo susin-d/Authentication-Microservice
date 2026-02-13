@@ -46,7 +46,56 @@ function App() {
   // Check health status on mount
   useEffect(() => {
     checkHealth()
+    
+    // Check for OAuth callback with access token in URL
+    const urlParams = new URLSearchParams(window.location.search)
+    const tokenFromUrl = urlParams.get('access_token')
+    const emailFromUrl = urlParams.get('email')
+    
+    if (tokenFromUrl) {
+      console.log('🔑 Access token received from OAuth callback')
+      setAccessToken(tokenFromUrl)
+      
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname)
+      
+      // Auto-fetch profile
+      fetchProfileWithToken(tokenFromUrl)
+      
+      displayResponse({
+        status: 'success',
+        message: 'Google OAuth successful!',
+        email: emailFromUrl,
+        note: 'Access token received and profile loaded'
+      }, 'success')
+    }
   }, [])
+
+  const fetchProfileWithToken = async (token) => {
+    try {
+      const res = await axios.get(`${apiUrl}/profile`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      setProfile(res.data)
+      setProfileData({
+        full_name: res.data.full_name || '',
+        phone_number: res.data.phone_number || '',
+        bio: res.data.bio || '',
+        date_of_birth: res.data.date_of_birth || '',
+        address: res.data.address || {
+          street: '',
+          city: '',
+          state: '',
+          zip: '',
+          country: ''
+        }
+      })
+    } catch (error) {
+      console.error('Failed to fetch profile after OAuth:', error)
+    }
+  }
 
   const checkHealth = async () => {
     try {
