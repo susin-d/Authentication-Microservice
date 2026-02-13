@@ -305,6 +305,11 @@ function App() {
           <div className="user-info">
             <strong>👤 {profile.email}</strong>
             {profile.full_name && <span> • {profile.full_name}</span>}
+            {profile.role === 'admin' && (
+              <span style={{ marginLeft: '10px', padding: '2px 8px', background: '#ff6b6b', color: 'white', borderRadius: '12px', fontSize: '0.75em', fontWeight: 'bold' }}>
+                ADMIN
+              </span>
+            )}
             <span style={{ marginLeft: 'auto', fontSize: '0.9em', color: '#666' }}>
               Provider: {profile.provider || 'password'}
             </span>
@@ -464,6 +469,7 @@ function App() {
                 {profile.phone_number && <div><strong>Phone:</strong> {profile.phone_number}</div>}
                 {profile.bio && <div><strong>Bio:</strong> {profile.bio}</div>}
                 {profile.date_of_birth && <div><strong>DOB:</strong> {profile.date_of_birth}</div>}
+                <div><strong>Role:</strong> {profile.role || 'user'} {profile.role === 'admin' && '👑'}</div>
                 <div><strong>Provider:</strong> {profile.provider}</div>
                 <div><strong>Verified:</strong> {profile.email_verified ? '✅ Yes' : '❌ No'}</div>
                 {profile.last_login_at && <div><strong>Last Login:</strong> {new Date(profile.last_login_at).toLocaleString()}</div>}
@@ -601,6 +607,12 @@ function App() {
           <p style={{ marginBottom: '15px', color: '#666' }}>
             Send an email to all active users with verified email addresses.
           </p>
+          {profile && profile.role !== 'admin' && (
+            <div style={{ padding: '12px', background: '#fff3cd', border: '1px solid #ffc107', borderRadius: '6px', marginBottom: '15px', color: '#856404' }}>
+              <strong>⚠️ Admin Access Required</strong>
+              <p style={{ margin: '5px 0 0 0', fontSize: '0.9em' }}>This feature is only available to administrators.</p>
+            </div>
+          )}
           <form onSubmit={handleBroadcastEmail}>
             <div className="form-group">
               <label>Subject</label>
@@ -623,12 +635,17 @@ function App() {
               />
               <small>This message will be sent to all active users</small>
             </div>
-            <button type="submit" className="btn btn-primary" disabled={loading || !accessToken}>
+            <button type="submit" className="btn btn-primary" disabled={loading || !accessToken || (profile && profile.role !== 'admin')}>
               {loading ? <span className="spinner"></span> : '📤'} Send to All Users
             </button>
             {!accessToken && (
               <small style={{ display: 'block', marginTop: '10px', color: '#999', textAlign: 'center' }}>
                 Sign in first to send broadcast emails
+              </small>
+            )}
+            {accessToken && profile && profile.role !== 'admin' && (
+              <small style={{ display: 'block', marginTop: '10px', color: '#999', textAlign: 'center' }}>
+                Admin privileges required for this feature
               </small>
             )}
           </form>

@@ -60,4 +60,22 @@ const protect = (req, res, next) => {
   }
 };
 
-module.exports = { protect };
+const requireAdmin = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({ 
+      error: 'Authentication required',
+      code: 'NO_AUTH'
+    });
+  }
+
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ 
+      error: 'Access denied. Admin privileges required.',
+      code: 'INSUFFICIENT_PERMISSIONS'
+    });
+  }
+
+  next();
+};
+
+module.exports = { protect, requireAdmin };

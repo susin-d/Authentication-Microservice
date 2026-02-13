@@ -6,7 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/auth.controller');
-const { protect } = require('../middleware/auth.middleware');
+const { protect, requireAdmin } = require('../middleware/auth.middleware');
 const { signupValidation, signinValidation } = require('../middleware/validator.middleware');
 
 // Public Routes
@@ -21,6 +21,8 @@ router.post('/complete-verification', protect, authController.completeVerificati
 router.get('/profile', protect, authController.getProfile);
 router.put('/profile', protect, authController.updateProfile);
 router.delete('/delete-account', protect, authController.removeAccount);
-router.post('/broadcast-email', protect, authController.broadcastEmail);
+
+// Admin-only Routes
+router.post('/broadcast-email', protect, requireAdmin, authController.broadcastEmail);
 
 module.exports = router;

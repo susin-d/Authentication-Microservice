@@ -142,7 +142,7 @@ class AuthService {
 
     // 6. Generate JWT
     const token = jwt.sign(
-      { sub: user.id, email: user.email, role: 'user' },
+      { sub: user.id, email: user.email, role: user.role || 'user' },
       process.env.JWT_SECRET,
       { expiresIn: securityConfig.jwt.accessTokenExpiry }
     );
@@ -404,7 +404,7 @@ class AuthService {
 
     // 5. Generate JWT
     const serviceToken = jwt.sign(
-      { sub: userId, email, role: 'user' },
+      { sub: userId, email, role: user.role || 'user' },
       process.env.JWT_SECRET,
       { expiresIn: securityConfig.jwt.accessTokenExpiry }
     );
