@@ -8,9 +8,23 @@
 require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
 
+// Check required environment variables
+if (!process.env.SUPABASE_URL) {
+  console.error('❌ Error: SUPABASE_URL is not set in .env file');
+  process.exit(1);
+}
+
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  console.error('❌ Error: SUPABASE_SERVICE_ROLE_KEY is not set in .env file');
+  console.log('💡 Add this to your .env file:');
+  console.log('   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here');
+  console.log('\n📍 Find it in: Supabase Dashboard → Settings → API → service_role key');
+  process.exit(1);
+}
+
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 async function listUsers() {

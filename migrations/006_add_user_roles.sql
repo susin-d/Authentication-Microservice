@@ -15,8 +15,10 @@ COMMENT ON COLUMN users.role IS 'User role: user (default) or admin';
 -- Update existing users to have 'user' role
 UPDATE users SET role = 'user' WHERE role IS NULL;
 
--- Update users_complete view to include role
-CREATE OR REPLACE VIEW public.users_complete AS
+-- Drop and recreate users_complete view to include role
+DROP VIEW IF EXISTS public.users_complete;
+
+CREATE VIEW public.users_complete AS
 SELECT 
   u.id,
   u.email,
