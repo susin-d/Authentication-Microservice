@@ -1,21 +1,21 @@
 /**
- * Email Service - v1.0.2
- * Brevo (SendInBlue) transactional email integration
+ * Email Service - v1.1.0
+ * Brevo transactional email integration (updated SDK)
  */
 
-const SibApiV3Sdk = require('sib-api-v3-sdk');
+const brevo = require('@getbrevo/brevo');
 
 class EmailService {
   constructor() {
-    this.client = SibApiV3Sdk.ApiClient.instance;
-    const apiKey = this.client.authentications['api-key'];
+    const apiInstance = new brevo.TransactionalEmailsApi();
+    const apiKey = apiInstance.authentications['apiKey'];
     apiKey.apiKey = process.env.BREVO_API_KEY;
-
-    this.apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+    
+    this.apiInstance = apiInstance;
   }
 
   async sendVerificationEmail(toEmail, verificationLink) {
-    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+    const sendSmtpEmail = new brevo.SendSmtpEmail();
 
     sendSmtpEmail.subject = "Verify Your Email Address 📧";
 
@@ -56,7 +56,7 @@ class EmailService {
   }
 
   async sendWelcomeEmail(toEmail, userName) {
-    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+    const sendSmtpEmail = new brevo.SendSmtpEmail();
 
     sendSmtpEmail.subject = "Welcome to M-Auth! 🚀";
     const displayName = userName || toEmail.split('@')[0];
@@ -109,7 +109,7 @@ class EmailService {
   }
 
   async sendBroadcastEmail(toEmail, subject, htmlContent) {
-    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+    const sendSmtpEmail = new brevo.SendSmtpEmail();
 
     sendSmtpEmail.subject = subject;
     sendSmtpEmail.htmlContent = htmlContent;
