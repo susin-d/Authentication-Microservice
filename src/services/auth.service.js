@@ -23,12 +23,22 @@ const validateHttpsUrl = (frontendUrl) => {
   if (!frontendUrl) return null;
   try {
     const parsedUrl = new URL(frontendUrl);
-    if (parsedUrl.protocol !== 'https:') {
-      throw new Error('frontendUrl must be a valid https:// URL');
+    // Allow http for localhost/127.0.0.1 in development, require https otherwise
+    const isLocalhost = parsedUrl.hostname === 'localhost' || 
+                       parsedUrl.hostname === '127.0.0.1' || 
+                       parsedUrl.hostname.endsWith('.localhost');
+    
+    if (parsedUrl.protocol === 'http:' && !isLocalhost) {
+      throw new Error('frontendUrl must be a valid https:// URL (http only allowed for localhost)');
     }
+    
+    if (parsedUrl.protocol !== 'https:' && parsedUrl.protocol !== 'http:') {
+      throw new Error('frontendUrl must be a valid http:// or https:// URL');
+    }
+    
     return frontendUrl.replace(/\/+$/, '');
   } catch (error) {
-    throw new Error('frontendUrl must be a valid https:// URL');
+    throw new Error(error.message || 'frontendUrl must be a valid https:// URL');
   }
 };
 

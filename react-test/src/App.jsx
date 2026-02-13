@@ -112,9 +112,11 @@ function App() {
     displayResponse({
       status: 'info',
       message: 'Redirecting to Google OAuth...',
-      note: 'After authentication, you will be redirected to FRONTEND_URL'
+      note: 'After authentication, you will be redirected back to this page'
     }, 'info')
-    window.location.href = `${apiUrl}/google`
+    // Pass the current frontend URL so backend knows where to redirect after OAuth
+    const currentUrl = window.location.origin
+    window.location.href = `${apiUrl}/google?frontend_url=${encodeURIComponent(currentUrl)}`
   }
 
   const handleDeleteAccount = async () => {

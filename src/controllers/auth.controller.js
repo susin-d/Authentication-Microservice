@@ -254,6 +254,11 @@ exports.googleAuth = async (req, res) => {
     const protocol = (host.includes('susindran.in') || process.env.NODE_ENV === 'production') ? 'https' : req.protocol;
     const origin = `${protocol}://${host}`;
     const frontendUrl = req.query.frontend_url;
+    
+    console.log('🔵 Google OAuth Initiated');
+    console.log('   Backend origin:', origin);
+    console.log('   Frontend URL from query:', frontendUrl);
+    
     const authUrl = await AuthService.getGoogleAuthUrl(origin, frontendUrl);
     res.redirect(authUrl);
   } catch (err) {
@@ -302,12 +307,17 @@ exports.googleCallback = async (req, res) => {
       }
     }
 
+    console.log('🟢 Google OAuth Callback Received');
+    console.log('   Decoded frontend URL from state:', frontendUrl);
+
     // Force HTTPS for production domain
     const host = req.get('host');
     const protocol = (host.includes('susindran.in') || process.env.NODE_ENV === 'production') ? 'https' : req.protocol;
     const origin = `${protocol}://${host}`;
     const session = await AuthService.exchangeGoogleCode(code, origin);
     const redirectTo = AuthService.buildFrontendRedirect(frontendUrl);
+    
+    console.log('   Redirecting user to:', redirectTo);
 
     // Set cookies using security config
     res.cookie('auth-token', session.access_token, {
