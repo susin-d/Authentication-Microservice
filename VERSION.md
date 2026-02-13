@@ -1,8 +1,37 @@
 # M-Auth Microservice - Version History
 
-## Version 1.0.1 (Current)
-**Release Date:** February 12, 2026  
+## Version 1.1.0 (Current)
+**Release Date:** February 13, 2026  
 **Status:** Production Ready
+
+### Changes from v1.0.1
+- **Brevo SDK Updated:** Migrated from deprecated `sib-api-v3-sdk` to official `@getbrevo/brevo` package
+  - Resolves TLS connection errors
+  - Uses official Brevo API endpoints
+  - Better error handling and logging
+- **Email Service Enhanced:** v1.2.0 with retry logic and new email types
+  - Added exponential backoff retry mechanism (3 attempts)
+  - New password reset email template
+  - New account deletion confirmation email
+  - All email methods now use retry logic with configurable delays
+- **Resend Verification Email Endpoint:** New `/api/v1/auth/resend-verification` (POST)
+  - Request new verification email if original expired
+  - Prevents spam with rate limiting (429 errors)
+  - Validates user existence and verification status
+  - Rate-limited per user
+- **Updated API Documentation:** Added resend-verification endpoint reference
+- **Validation Improvements:** Added resendVerificationValidation middleware
+
+### New Features
+- 📧 Email retry logic with exponential backoff
+- 🔄 Resend verification email endpoint
+- 🔐 Password reset email (template ready for implementation)
+- 📝 Account deletion confirmation email
+- ✅ Better error handling in email service
+
+## Version 1.0.1
+**Release Date:** February 12, 2026  
+**Status:** Superseded by v1.1.0
 
 ### Changes from v1.0.0
 - **Google OAuth Simplified:** OAuth flow now uses backend URL exclusively

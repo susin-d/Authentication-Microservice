@@ -123,8 +123,18 @@ exports.login = async (req, res) => {
 exports.removeAccount = async (req, res) => {
   try {
     const ip = req.ip || req.connection.remoteAddress;
+    const email = req.user.email;
+    
+    // Delete account
     await AuthService.deleteAccount(req.user.sub);
-    await auditLogger.logAccountDeletion(req.user.sub, req.user.email, ip);
+    
+    // Send account deletion confirmation email
+    EmailService
+      .sendAccountDeletionEmail(email, email.split('@')[0])
+      .catch(err => console.error('Account deletion email failed', err));
+    
+    await auditLogger.logAccountDeletion(req.user.sub, email, ip);
+    
     res.status(200).json({ 
       message: "Account deleted successfully",
       success: true
@@ -614,6 +624,64 @@ exports.completeVerification = async (req, res) => {
     
     await auditLogger.log('VERIFICATION_CHECK_FAILED', {
       userId: req.user?.sub,
+      error: err.message,
+      ip: req.ip || req.connection.remoteAddress
+    });
+    
+    res.status(statusCode).json({ 
+      error: errorMessage,
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+  }
+};
+
+exports.resendVerification = async (req, res) => {
+  try {
+    const { email, frontendUrl } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ 
+        error: 'Email is required to resend verification link.'
+      });
+    }
+
+    const result = await AuthService.resendVerificationEmail(email, frontendUrl);
+    
+    await auditLogger.log('VERIFICATION_RESENT', {
+      email,
+      ip: req.ip || req.connection.remoteAddress
+    });
+
+    res.status(200).json({ 
+      message: 'Verification link has been sent to your email.',
+      details: process.env.NODE_ENV === 'development' ? 
+        `Verification link: ${result.verificationLink}` : undefined
+    });
+  } catch (err) {
+    console.error('Resend verification error:', err);
+    
+    let errorMessage = 'Failed to resend verification email.';
+    let statusCode = 400;
+    
+    if (err.message) {
+      const msg = err.message.toLowerCase();
+      
+      if (msg.includes('not found') || msg.includes('does not exist')) {
+        errorMessage = 'User with this email not found. Please sign up first.';
+        statusCode = 404;
+      } else if (msg.includes('already verified')) {
+        errorMessage = 'Email is already verified. You can sign in now.';
+        statusCode = 200;
+      } else if (msg.includes('rate limit') || msg.includes('too many')) {
+        errorMessage = 'Too many verification requests. Please try again in a few minutes.';
+        statusCode = 429;
+      } else if (err.message.length < 200) {
+        errorMessage = err.message;
+      }
+    }
+    
+    await auditLogger.log('VERIFICATION_RESEND_FAILED', {
+      email: req.body.email,
       error: err.message,
       ip: req.ip || req.connection.remoteAddress
     });

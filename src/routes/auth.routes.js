@@ -7,12 +7,13 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/auth.controller');
 const { protect, requireAdmin } = require('../middleware/auth.middleware');
-const { signupValidation, signinValidation } = require('../middleware/validator.middleware');
+const { signupValidation, signinValidation, resendVerificationValidation } = require('../middleware/validator.middleware');
 
 // Public Routes
 router.post('/signup', signupValidation, authController.register);
 router.post('/signin', signinValidation, authController.login);
 router.get('/verify-email', authController.verifyEmail);
+router.post('/resend-verification', resendVerificationValidation, authController.resendVerification);
 router.get('/google', authController.googleAuth);
 router.get('/google/callback', authController.googleCallback);
 

@@ -79,6 +79,22 @@ const signinValidation = [
   validate
 ];
 
+const resendVerificationValidation = [
+  body('email')
+    .trim()
+    .isEmail().withMessage('Invalid email address')
+    .normalizeEmail()
+    .isLength({ max: 255 }).withMessage('Email too long'),
+  
+  body('frontendUrl')
+    .optional()
+    .trim()
+    .isURL({ protocols: ['https'], require_protocol: true })
+    .withMessage('Frontend URL must be a valid HTTPS URL'),
+  
+  validate
+];
+
 // Sanitize inputs to prevent XSS
 const sanitizeInput = (str) => {
   if (typeof str !== 'string') return str;
@@ -88,6 +104,7 @@ const sanitizeInput = (str) => {
 module.exports = {
   signupValidation,
   signinValidation,
+  resendVerificationValidation,
   validate,
   sanitizeInput
 };

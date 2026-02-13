@@ -28,7 +28,7 @@ M-Auth is a production-ready **authentication microservice** built with:
 - **Database:** Supabase (PostgreSQL)
 - **Auth Methods:** Email/Password, Google OAuth 2.0
 - **Security:** 10 comprehensive security features
-- **Email:** Brevo (SendInBlue) transactional emails
+- **Email:** Brevo transactional emails (official SDK: @getbrevo/brevo)
 
 ### Version Information
 - **Current Version:** 1.0.1
@@ -39,7 +39,7 @@ M-Auth is a production-ready **authentication microservice** built with:
 ### Key Features
 1. JWT-based authentication (1-hour expiry)
 2. Google OAuth with direct API integration
-3. Email verification via Brevo
+3. Email verification via Brevo (official SDK)
 4. Failed login protection (5 attempts, 15-min lockout)
 5. Audit logging for security events
 6. Input validation with password strength rules
@@ -402,7 +402,7 @@ async methodName(param1, param2) {
 - **Check:** JWT_SECRET matches between environments
 
 **4. "Email not sending"**
-- **Cause:** Invalid BREVO_API_KEY or unverified sender
+- **Cause:** Invalid BREVO_API_KEY, unverified sender, or Brevo SDK misconfiguration
 - **Solution:** Check Brevo dashboard, verify sender email
 - **Debug:** Check console logs for Brevo errors
 

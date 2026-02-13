@@ -243,6 +243,75 @@ GET /verify-email?token=<verification_token>
 
 ---
 
+### 5.1. Resend Verification Email (Public)
+
+Request a new verification email to be sent.
+
+```http
+POST /resend-verification
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "frontendUrl": "https://yourdomain.com"
+}
+```
+
+**Parameters:**
+- `email` (required): Email address associated with account
+- `frontendUrl` (optional): Frontend URL for email verification redirects
+
+**Response:** `200 OK`
+```json
+{
+  "message": "Verification link has been sent to your email."
+}
+```
+
+**Response (Development mode):**
+```json
+{
+  "message": "Verification link has been sent to your email.",
+  "details": "Verification link: http://localhost:3000/api/v1/auth/verify-email?token=abc123..."
+}
+```
+
+**Error Responses:**
+```json
+// User not found
+{
+  "error": "User with this email not found. Please sign up first.",
+  "statusCode": 404
+}
+
+// Email already verified
+{
+  "error": "Email is already verified. You can sign in now.",
+  "statusCode": 200
+}
+
+// Rate limited
+{
+  "error": "Too many verification requests. Please try again in a few minutes.",
+  "statusCode": 429
+}
+
+// Missing email
+{
+  "error": "Email is required to resend verification link."
+}
+```
+
+**What Happens:**
+1. User existence is checked
+2. Email verification status is verified
+3. Old verification tokens are deleted
+4. New token is generated (24-hour expiry)
+5. Verification email is sent to user
+6. (Development) Token is returned in response
+
+---
+
 ### 6. Get Profile (Protected)
 
 Retrieve authenticated user's profile.

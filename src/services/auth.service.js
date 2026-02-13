@@ -222,6 +222,60 @@ class AuthService {
     };
   }
 
+  async resendVerificationEmail(email, frontendUrl) {
+    // 1. Check if user exists
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('id, email, email_verified')
+      .eq('email', email)
+      .single();
+
+    if (userError || !user) {
+      throw new Error('User with this email not found. Please sign up first.');
+    }
+
+    // 2. Check if already verified
+    if (user.email_verified) {
+      throw new Error('Email is already verified. You can sign in now.');
+    }
+
+    // 3. Delete old verification tokens
+    await supabase
+      .from('user_auth_tokens')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('token_type', 'email_verification')
+      .is('used_at', null);
+
+    // 4. Generate new verification token
+    const token = generateToken();
+    const expires_at = new Date(Date.now() + VERIFICATION_TOKEN_EXPIRY);
+
+    const { error: insertError } = await supabase
+      .from('user_auth_tokens')
+      .insert([{
+        user_id: user.id,
+        token_type: 'email_verification',
+        token,
+        expires_at
+      }]);
+
+    if (insertError) throw insertError;
+
+    // 5. Send verification email
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+    const verificationLink = `${backendUrl}/api/v1/auth/verify-email?token=${token}`;
+    
+    EmailService
+      .sendVerificationEmail(email, verificationLink)
+      .catch(err => console.error('Resend verification email failed', err));
+
+    return {
+      email,
+      verificationLink: process.env.NODE_ENV === 'development' ? verificationLink : undefined
+    };
+  }
+
   async deleteAccount(userId) {
     // Soft delete
     const { error } = await supabase
