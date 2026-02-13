@@ -107,6 +107,28 @@ class EmailService {
       // We don't throw error here so it doesn't affect the verification flow
     }
   }
+
+  async sendBroadcastEmail(toEmail, subject, htmlContent) {
+    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+
+    sendSmtpEmail.subject = subject;
+    sendSmtpEmail.htmlContent = htmlContent;
+    
+    sendSmtpEmail.sender = { 
+      name: process.env.BREVO_SENDER_NAME, 
+      email: process.env.BREVO_SENDER_EMAIL 
+    };
+    
+    sendSmtpEmail.to = [{ email: toEmail }];
+
+    try {
+      const data = await this.apiInstance.sendTransacEmail(sendSmtpEmail);
+      return { success: true, messageId: data.messageId };
+    } catch (error) {
+      console.error('❌ Broadcast email error for', toEmail, ':', error.message);
+      return { success: false, error: error.message };
+    }
+  }
 }
 
 module.exports = new EmailService();

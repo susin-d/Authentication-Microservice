@@ -38,6 +38,11 @@ function App() {
     }
   })
 
+  const [broadcastData, setBroadcastData] = useState({
+    subject: '',
+    message: ''
+  })
+
   // Check health status on mount
   useEffect(() => {
     checkHealth()
@@ -224,6 +229,52 @@ function App() {
         message: 'Profile updated successfully!',
         profile: res.data.profile
       }, 'success')
+    } catch (error) {
+      displayResponse({
+        status: 'error',
+        message: error.response?.data?.error || error.message
+      }, 'error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleBroadcastEmail = async (e) => {
+    e.preventDefault()
+    if (!accessToken) {
+      displayResponse({
+        status: 'error',
+        message: 'Please sign in first to get an access token'
+      }, 'error')
+      return
+    }
+
+    if (!broadcastData.subject || !broadcastData.message) {
+      displayResponse({
+        status: 'error',
+        message: 'Please provide both subject and message'
+      }, 'error')
+      return
+    }
+
+    if (!confirm('Are you sure you want to send this email to ALL users?')) {
+      return
+    }
+
+    setLoading(true)
+    try {
+      const res = await axios.post(`${apiUrl}/broadcast-email`, broadcastData, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      })
+      displayResponse({
+        status: 'success',
+        message: res.data.message,
+        stats: res.data.stats
+      }, 'success')
+      // Clear form
+      setBroadcastData({ subject: '', message: '' })
     } catch (error) {
       displayResponse({
         status: 'error',
@@ -536,6 +587,48 @@ function App() {
             {!accessToken && (
               <small style={{ display: 'block', marginTop: '10px', color: '#999', textAlign: 'center' }}>
                 Sign in first to update your profile
+              </small>
+            )}
+          </form>
+        </div>
+
+        {/* Broadcast Email Card */}
+        <div className="card">
+          <h2>
+            <span>📧 Broadcast Email</span>
+            <span className="badge">POST</span>
+          </h2>
+          <p style={{ marginBottom: '15px', color: '#666' }}>
+            Send an email to all active users with verified email addresses.
+          </p>
+          <form onSubmit={handleBroadcastEmail}>
+            <div className="form-group">
+              <label>Subject</label>
+              <input
+                type="text"
+                value={broadcastData.subject}
+                onChange={(e) => setBroadcastData({ ...broadcastData, subject: e.target.value })}
+                placeholder="Important Announcement"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>Message</label>
+              <textarea
+                value={broadcastData.message}
+                onChange={(e) => setBroadcastData({ ...broadcastData, message: e.target.value })}
+                placeholder="Enter your message here..."
+                rows="6"
+                required
+              />
+              <small>This message will be sent to all active users</small>
+            </div>
+            <button type="submit" className="btn btn-primary" disabled={loading || !accessToken}>
+              {loading ? <span className="spinner"></span> : '📤'} Send to All Users
+            </button>
+            {!accessToken && (
+              <small style={{ display: 'block', marginTop: '10px', color: '#999', textAlign: 'center' }}>
+                Sign in first to send broadcast emails
               </small>
             )}
           </form>

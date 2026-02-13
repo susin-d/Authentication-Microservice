@@ -21,5 +21,6 @@ router.post('/complete-verification', protect, authController.completeVerificati
 router.get('/profile', protect, authController.getProfile);
 router.put('/profile', protect, authController.updateProfile);
 router.delete('/delete-account', protect, authController.removeAccount);
+router.post('/broadcast-email', protect, authController.broadcastEmail);
 
 module.exports = router;

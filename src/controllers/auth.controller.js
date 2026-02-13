@@ -4,9 +4,11 @@
  */
 
 const AuthService = require('../services/auth.service');
+const EmailService = require('../services/email.service');
 const loginTracker = require('../utils/login.tracker');
 const auditLogger = require('../utils/audit.logger');
 const securityConfig = require('../config/security.config');
+const supabase = require('../config/supabase');
 
 exports.register = async (req, res) => {
   try {
@@ -613,6 +615,96 @@ exports.completeVerification = async (req, res) => {
     
     res.status(statusCode).json({ 
       error: errorMessage,
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+  }
+};
+
+exports.broadcastEmail = async (req, res) => {
+  try {
+    const { subject, message, htmlContent } = req.body;
+
+    if (!subject || (!message && !htmlContent)) {
+      return res.status(400).json({ 
+        error: 'Please provide subject and message/htmlContent for the broadcast email.' 
+      });
+    }
+
+    // Build HTML content
+    const emailHtml = htmlContent || `
+      <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+          <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+            <h2 style="color: #4285F4;">${subject}</h2>
+            <div style="margin: 20px 0;">
+              ${message.replace(/\n/g, '<br>')}
+            </div>
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;" />
+            <p style="color: #666; font-size: 12px; text-align: center;">
+              © 2026 M-Auth. All rights reserved.
+            </p>
+          </div>
+        </body>
+      </html>`;
+
+    // Get all active users
+    const { data: users, error } = await supabase
+      .from('users')
+      .select('email')
+      .eq('account_status', 'active')
+      .eq('email_verified', true);
+
+    if (error) {
+      throw new Error('Failed to fetch users: ' + error.message);
+    }
+
+    if (!users || users.length === 0) {
+      return res.status(404).json({ 
+        error: 'No active users found to send emails to.' 
+      });
+    }
+
+    console.log(`📧 Broadcasting email to ${users.length} users...`);
+
+    // Send emails to all users
+    const results = await Promise.allSettled(
+      users.map(user => EmailService.sendBroadcastEmail(user.email, subject, emailHtml))
+    );
+
+    const successful = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
+    const failed = results.length - successful;
+
+    await auditLogger.log('BROADCAST_EMAIL_SENT', {
+      sentBy: req.user.email,
+      userId: req.user.sub,
+      subject,
+      totalRecipients: users.length,
+      successful,
+      failed,
+      ip: req.ip || req.connection.remoteAddress
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Broadcast email sent successfully',
+      stats: {
+        totalRecipients: users.length,
+        successful,
+        failed
+      }
+    });
+  } catch (err) {
+    console.error('Broadcast email error:', err);
+    
+    await auditLogger.log('BROADCAST_EMAIL_FAILED', {
+      sentBy: req.user?.email,
+      userId: req.user?.sub,
+      error: err.message,
+      ip: req.ip || req.connection.remoteAddress
+    });
+    
+    res.status(500).json({ 
+      error: 'Failed to send broadcast email. Please try again.',
       details: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
   }
