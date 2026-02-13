@@ -334,11 +334,10 @@ exports.googleCallback = async (req, res) => {
       });
     }
 
-    // Add token to redirect URL for SPA to capture
+    // Add token to redirect URL hash (not query params for security)
+    // Hash fragments are NOT sent to server, NOT logged, and NOT in referrer
     const redirectUrl = new URL(redirectTo);
-    redirectUrl.searchParams.set('access_token', session.access_token);
-    redirectUrl.searchParams.set('user_id', session.user.id);
-    redirectUrl.searchParams.set('email', session.user.email);
+    redirectUrl.hash = `access_token=${session.access_token}&user_id=${session.user.id}&email=${encodeURIComponent(session.user.email)}`;
 
     return res.redirect(redirectUrl.toString());
   } catch (err) {

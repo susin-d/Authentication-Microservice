@@ -47,26 +47,28 @@ function App() {
   useEffect(() => {
     checkHealth()
     
-    // Check for OAuth callback with access token in URL
-    const urlParams = new URLSearchParams(window.location.search)
-    const tokenFromUrl = urlParams.get('access_token')
-    const emailFromUrl = urlParams.get('email')
+    // Check for OAuth callback with access token in URL hash (NOT query params for security)
+    // Hash fragments (#) are NOT sent to server, NOT logged, NOT in referrer headers
+    const hash = window.location.hash.substring(1) // Remove '#'
+    const hashParams = new URLSearchParams(hash)
+    const tokenFromHash = hashParams.get('access_token')
+    const emailFromHash = hashParams.get('email')
     
-    if (tokenFromUrl) {
-      console.log('🔑 Access token received from OAuth callback')
-      setAccessToken(tokenFromUrl)
+    if (tokenFromHash) {
+      console.log('🔑 Access token received from OAuth callback (via secure hash)')
+      setAccessToken(tokenFromHash)
       
-      // Clean URL
+      // Clean URL - remove hash completely
       window.history.replaceState({}, document.title, window.location.pathname)
       
       // Auto-fetch profile
-      fetchProfileWithToken(tokenFromUrl)
+      fetchProfileWithToken(tokenFromHash)
       
       displayResponse({
         status: 'success',
         message: 'Google OAuth successful!',
-        email: emailFromUrl,
-        note: 'Access token received and profile loaded'
+        email: emailFromHash,
+        note: 'Access token received securely via URL hash (not logged)'
       }, 'success')
     }
   }, [])
